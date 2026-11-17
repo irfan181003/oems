@@ -10,15 +10,24 @@ function entityOf(req) {
   return seg || 'api';
 }
 
-function deny(req, next, reason) {
+/** BR-26: write the 'Denied' audit row and return the 403 error (for record-level checks in handlers). */
+function deniedError(req, reason, entityId = null) {
   auditFromReq(req, {
     action: `${req.method} ${req.baseUrl}${req.path}`,
     entity: entityOf(req),
+    entity_id: entityId,
     outcome: 'Denied',
     detail: { reason },
   });
-  return next(forbidden());
+  return forbidden();
 }
+
+function deny(req, next, reason) {
+  return next(deniedError(req, reason));
+}
+
+/** True when the user may use Employee self-service (ASSUMPTION A-7). */
+const isSelfServiceUser = (user) => !!user && config.selfServiceRoles.includes(user.role);
 
 /** Allow only the listed roles; anything else gets 403 and an AUDIT_LOG 'Denied' row. */
 function requireRole(...roles) {
@@ -39,10 +48,10 @@ function requireRole(...roles) {
  */
 function requireSelfService(req, res, next) {
   if (!req.user) return next(unauthorized());
-  if (!config.selfServiceRoles.includes(req.user.role)) {
+  if (!isSelfServiceUser(req.user)) {
     return deny(req, next, `role ${req.user.role} not in SELF_SERVICE_ROLES`);
   }
   return next();
 }
 
-module.exports = { requireRole, requireSelfService };
+module.exports = { requireRole, requireSelfService, deniedError, isSelfServiceUser };

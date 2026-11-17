@@ -30,20 +30,43 @@ function writeAudit(e, db = getDb()) {
   );
 }
 
-/** Convenience: audit an action performed by the authenticated user of `req`. */
-function auditFromReq(req, { action, entity, entity_id = null, outcome = 'Success', detail = null }, db) {
+/** Audit an action performed by an authenticated user (`actor` = req.user). */
+function auditActor(db, actor, { action, entity, entity_id = null, outcome = 'Success', detail = null }) {
   writeAudit(
-    {
-      employee_id: req.user ? req.user.employee_id : null,
-      role: req.user ? req.user.role : null,
-      action,
-      entity,
-      entity_id,
-      outcome,
-      detail,
-    },
+    { employee_id: actor ? actor.employee_id : null, role: actor ? actor.role : null, action, entity, entity_id, outcome, detail },
     db
   );
 }
 
-module.exports = { writeAudit, auditFromReq };
+/** Convenience: audit an action performed by the authenticated user of `req`. */
+function auditFromReq(req, entry, db) {
+  auditActor(db || getDb(), req.user, entry);
+}
+
+/**
+ * Route middleware: when the response finishes with an error status (other than 401/403,
+ * which are handled by authenticate / the RBAC gates), write an AUDIT_LOG row with outcome
+ * 'Failed', so refused create/update/decision requests are traceable too (section 9).
+ * Successful mutations are audited inside the service transaction.
+ */
+function auditFailures(entity, action) {
+  return function auditOnFinish(req, res, next) {
+    res.on('finish', () => {
+      if (res.statusCode < 400 || res.statusCode === 401 || res.statusCode === 403 || !req.user) return;
+      try {
+        auditFromReq(req, {
+          action,
+          entity,
+          entity_id: res.locals.auditEntityId || Object.values(req.params || {})[0] || null,
+          outcome: 'Failed',
+          detail: { status: res.statusCode, reason: res.locals.errorMessage || null },
+        });
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'test') console.error('audit write failed', err);
+      }
+    });
+    next();
+  };
+}
+
+module.exports = { writeAudit, auditActor, auditFromReq, auditFailures };

@@ -27,7 +27,13 @@ function notFoundHandler(req, res) {
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   if (err instanceof AppError) {
+    res.locals.errorMessage = err.message; // used by auditFailures (never contains restricted values)
     return res.status(err.status).json(failureBody(err.status, err.message, err.details));
+  }
+  // A UNIQUE constraint hit by a concurrent request that passed the service-level check.
+  if (err && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    res.locals.errorMessage = 'Duplicate record';
+    return res.status(409).json(failureBody(409, 'A record with the same unique values already exists'));
   }
   if (err && err.type === 'entity.parse.failed') {
     return res.status(400).json(failureBody(400, 'Malformed JSON body'));

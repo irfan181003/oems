@@ -71,6 +71,11 @@ function addYears(iso, years) {
   return `${String(ty).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
 }
 
+/** Add (or subtract) whole days to a YYYY-MM-DD date. */
+function addDays(iso, days) {
+  return new Date(toUtcMs(iso) + days * 86400000).toISOString().slice(0, 10);
+}
+
 /** Number of days in a YYYY-MM pay period. */
 function daysInMonth(period) {
   const [y, m] = period.split('-').map(Number);
@@ -90,6 +95,7 @@ module.exports = {
   isValidIsoDate,
   daysInclusive,
   addYears,
+  addDays,
   daysInMonth,
   periodBounds,
 };

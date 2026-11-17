@@ -9,6 +9,11 @@ const { ok } = require('./lib/result');
 const { notFoundHandler, errorHandler } = require('./middleware/errors');
 
 const authRoutes = require('./modules/auth/routes');
+const attendanceRoutes = require('./modules/attendance/routes');
+const leaveRoutes = require('./modules/leave/routes');
+const profileRoutes = require('./modules/profile/routes');
+const employeeRoutes = require('./modules/employees/routes');
+const retirementRoutes = require('./modules/retirement/routes');
 
 function createApp() {
   const app = express();
@@ -30,6 +35,11 @@ function createApp() {
   );
 
   api.use('/auth', authRoutes);
+  api.use('/attendance', attendanceRoutes); // Process 0.1
+  api.use('/leaves', leaveRoutes); // Process 0.2
+  api.use('/profile', profileRoutes); // Process 0.3.3
+  api.use('/employees', employeeRoutes); // Process 0.3.1, 0.3.2
+  api.use('/retirement-plans', retirementRoutes); // Process 0.3.4
 
   app.use('/api', api);
   app.use(notFoundHandler);
