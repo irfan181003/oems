@@ -1,0 +1,17 @@
+/* Print: only the page content (reports, payslips and offer letters are printed from the browser) */
+@media print {
+  body { background: #fff; }
+  .sidebar,
+  .topbar,
+  .backdrop,
+  .toasts,
+  .no-print,
+  .skip-link { display: none !important; }
+  .app { display: block; }
+  .main { padding: 0; }
+  .content { max-width: none; }
+  .card { border: none; padding: 0; }
+  .table-wrap { max-height: none; overflow: visible; }
+  .table thead th { position: static; }
+  a { color: inherit; text-decoration: none; }
+}
