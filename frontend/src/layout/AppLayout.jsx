@@ -1,5 +1,5 @@
 // Signed-in shell: sidebar + top bar + idle timer + routed content
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth, SESSION_ENDED } from '../auth/AuthContext';
 import useIdleTimer from '../auth/useIdleTimer';
@@ -16,7 +16,25 @@ export default function AppLayout() {
   const expire = useCallback(() => logout(SESSION_ENDED), [logout]);
   const { remainingMs, warning, stay } = useIdleTimer(Boolean(user), expire);
 
-  useEffect(() => setMenuOpen(false), [location.pathname]);
+  // On navigation: close the slide-over menu and move focus to the new page content (keyboard / screen readers)
+  const firstRender = useRef(true);
+  useEffect(() => {
+    setMenuOpen(false);
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    const main = document.getElementById('main');
+    if (main) main.focus({ preventScroll: true });
+  }, [location.pathname]);
+
+  // Escape closes the slide-over menu
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKey = (e) => e.key === 'Escape' && setMenuOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   if (!user) return null;
   return (

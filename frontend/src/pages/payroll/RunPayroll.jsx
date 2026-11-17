@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { payroll } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import { ConfirmDialog } from '../../components/Modal';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
@@ -122,6 +123,7 @@ export default function RunPayroll() {
         title="Run Payroll"
         subtitle="Collect attendance and approved leave, calculate salaries (Proposed formula, BR-17) and store one payroll line per employee for the pay period."
       />
+      <LoadWarning errors={[emps.error]} onRetry={emps.reload} what="The employee list" />
       <form className="card form" onSubmit={review} noValidate style={{ maxWidth: 'none' }}>
         <div className="form-grid" style={{ maxWidth: 560 }}>
           <FormField label={LABELS.pay_period} hint={HINTS.pay_period} error={errors.pay_period} required>

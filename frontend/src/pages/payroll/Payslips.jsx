@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { payslips } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
 import StatCard, { StatRow } from '../../components/StatCard';
@@ -108,6 +109,14 @@ export default function Payslips() {
   return (
     <>
       <PageHeader title="Payslips" subtitle="Generate payslips from Processed or Paid payroll lines (BR-21). Amounts are copied unchanged (BR-20)." />
+      <LoadWarning
+        errors={[now.error, emps.error]}
+        onRetry={() => {
+          now.reload();
+          emps.reload();
+        }}
+        what="The employee list or server date"
+      />
 
       <form className="card form" onSubmit={generate} noValidate style={{ maxWidth: 'none' }}>
         <h2 className="card__title">Generate payslips</h2>

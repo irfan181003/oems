@@ -11,7 +11,7 @@
 
   /* status colours, each with a light tint background */
   --ok: #15803D;
-  --ok-tint: #E8F5EC;
+  --ok-tint: #EEF8F1; /* 4.62:1 with --ok (WCAG AA) */
   --warn: #B45309;
   --warn-tint: #FDF3E7;
   --bad: #B91C1C;

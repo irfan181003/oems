@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { candidates, vacancies } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import Modal from '../../components/Modal';
 import PageHeader from '../../components/PageHeader';
 import StatCard, { StatRow } from '../../components/StatCard';
@@ -105,6 +106,7 @@ export default function Candidates() {
           </button>
         }
       />
+      <LoadWarning errors={[vacs.error]} onRetry={vacs.reload} what="The vacancy list" />
       <StatRow>
         <StatCard label="Candidates shown" mono loading={loading} value={data ? data.length : '—'} />
         <StatCard label="Open vacancies" mono loading={vacs.loading} value={vacs.data ? openVacancies.length : '—'} />

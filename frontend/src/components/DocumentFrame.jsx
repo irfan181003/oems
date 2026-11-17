@@ -29,7 +29,7 @@ const DocumentFrame = forwardRef(function DocumentFrame({ html, title }, ref) {
       sandbox="allow-same-origin allow-modals"
       referrerPolicy="no-referrer"
       onLoad={fit}
-      style={{ width: '100%', minHeight: 600, border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: '#fff' }}
+      style={{ width: '100%', minHeight: 600, border: 'none', display: 'block', background: 'transparent' }}
     />
   );
 });

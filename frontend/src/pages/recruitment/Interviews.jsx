@@ -6,6 +6,7 @@ import { ApiError } from '../../api/client';
 import { candidates, interviews, vacancies } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import Modal from '../../components/Modal';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
@@ -186,6 +187,15 @@ export default function Interviews() {
             Schedule interview
           </button>
         }
+      />
+      <LoadWarning
+        errors={[now.error, vacs.error, cands.error]}
+        onRetry={() => {
+          now.reload();
+          vacs.reload();
+          cands.reload();
+        }}
+        what="The candidate or vacancy list"
       />
       <StatRow>
         <StatCard label="Scheduled" mono loading={loading} value={count('Scheduled')} />

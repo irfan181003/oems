@@ -65,6 +65,9 @@
   border-bottom: 1px solid var(--line);
 }
 .doc__line:last-child { border-bottom: none; }
+.doc__line .mono,
+.doc__net .mono,
+.doc__meta dd { white-space: nowrap; } /* never break an amount or ID across lines */
 .doc__line--total { font-weight: 600; background: #FCFBF9; }
 .doc__net {
   display: flex;

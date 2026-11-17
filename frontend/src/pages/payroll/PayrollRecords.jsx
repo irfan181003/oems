@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { payroll } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import Modal, { ConfirmDialog } from '../../components/Modal';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
@@ -121,6 +122,7 @@ export default function PayrollRecords() {
   return (
     <>
       <PageHeader title="Payroll Records" subtitle="Processed payroll lines. Amounts cannot be edited after processing; only the status changes." />
+      <LoadWarning errors={[emps.error]} onRetry={emps.reload} what="The employee list" />
       <section className="card">
         <form
           className="toolbar"

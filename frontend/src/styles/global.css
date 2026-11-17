@@ -121,7 +121,7 @@ a {
   white-space: nowrap;
 }
 .topbar__session--soon { color: var(--warn); font-weight: 600; }
-.topbar__menu { display: none; }
+.topbar .topbar__menu { display: none; } /* more specific than .btn, which loads later */
 
 .sidebar {
   grid-area: side;
@@ -217,11 +217,16 @@ a {
     width: min(var(--sidebar-w), 85vw);
     z-index: 40;
     transform: translateX(-100%);
+    visibility: hidden; /* off-screen links must not be reachable with Tab */
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+  }
+  .sidebar--open {
+    transform: translateX(0);
+    visibility: visible;
     transition: transform 0.2s ease;
   }
-  .sidebar--open { transform: translateX(0); }
   .topbar { padding: 0 var(--s4); }
-  .topbar__menu { display: inline-flex; }
+  .topbar .topbar__menu { display: inline-flex; }
   .main { padding: var(--s5) var(--s4) var(--s7); }
 }
 

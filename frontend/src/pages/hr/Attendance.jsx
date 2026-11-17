@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { attendance } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
 import StatCard, { StatRow } from '../../components/StatCard';
@@ -63,6 +64,7 @@ export default function HrAttendance() {
   return (
     <>
       <PageHeader title="Attendance" subtitle="Attendance of all employees for a period." />
+      <LoadWarning errors={[emps.error]} onRetry={emps.reload} what="The employee list" />
       <section className="card">
         <form className="toolbar" onSubmit={submit} noValidate>
           <FormField label="Employee">

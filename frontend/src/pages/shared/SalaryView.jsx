@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { salary } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import PageHeader from '../../components/PageHeader';
 import StatCard, { StatRow } from '../../components/StatCard';
 import StatusBadge from '../../components/StatusBadge';
@@ -56,6 +57,7 @@ export default function SalaryView({ subtitle }) {
   return (
     <>
       <PageHeader title="Salary View" subtitle={subtitle || 'Basic salary and processed pay periods of employees.'} />
+      <LoadWarning errors={[options.error]} onRetry={options.reload} what="The employee list" />
       <section className="card">
         <form className="toolbar" onSubmit={submit} noValidate>
           <FormField label="Employee">

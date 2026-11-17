@@ -128,7 +128,7 @@
   font-weight: 600;
   color: var(--muted);
 }
-.table tbody tr:nth-child(even) td { background: #FCFBF9; }
+.table tbody tr:nth-child(even) > * { background: #FCFBF9; } /* td and row-header th alike */
 .table tbody tr:last-child td { border-bottom: none; }
 .table .num { text-align: right; }
 .table td.wrap { white-space: normal; min-width: 200px; }

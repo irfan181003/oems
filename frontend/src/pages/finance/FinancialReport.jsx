@@ -132,7 +132,7 @@ export default function FinancialReport() {
             {r && (
               <p className="muted small" style={{ marginTop: 4 }}>
                 {LABELS.generated_ts}: <Mono>{dateTime(r.generated_ts)}</Mono> · Pay periods included:{' '}
-                {r.pay_periods.length ? r.pay_periods.map((p) => <Mono key={p}>{period(p)} </Mono>) : 'none'} · Payroll lines: <Mono>{r.payroll_lines}</Mono>
+                <Mono>{r.pay_periods.length ? r.pay_periods.map(period).join(', ') : 'none'}</Mono> · Payroll lines: <Mono>{r.payroll_lines}</Mono>
               </p>
             )}
           </section>

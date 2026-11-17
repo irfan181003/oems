@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { interviews, offers } from '../../api/endpoints';
 import DataTable from '../../components/DataTable';
 import FormField, { ReadOnlyField } from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import Modal from '../../components/Modal';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
@@ -184,6 +185,7 @@ export default function Offers() {
           </button>
         }
       />
+      <LoadWarning errors={[now.error]} onRetry={now.reload} what="The server date" />
       <StatRow>
         <StatCard label="Eligible candidates" mono loading={ivs.loading || loading} value={ivs.data && data ? eligible.length : '—'} hint="Latest interview Selected, no offer yet" />
         <StatCard label="Issued" mono loading={loading} value={count('Issued')} />

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { leaves } from '../../api/endpoints';
 import FormField from '../../components/FormField';
+import LoadWarning from '../../components/LoadWarning';
 import { ConfirmDialog } from '../../components/Modal';
 import Mono from '../../components/Mono';
 import PageHeader from '../../components/PageHeader';
@@ -94,6 +95,7 @@ export default function LeaveReview() {
   return (
     <>
       <PageHeader title="Leave Review" subtitle="Approve or reject leave applications. Decisions are final and recorded with your Employee ID." />
+      <LoadWarning errors={[emps.error]} onRetry={emps.reload} what="The employee list" />
       <section className="card">
         <div className="toolbar">
           <FormField label={LABELS.leave_status}>
@@ -114,7 +116,7 @@ export default function LeaveReview() {
               ))}
             </select>
           </FormField>
-          <p className="muted" aria-live="polite" style={{ alignSelf: 'center' }}>
+          <p className="muted" aria-live="polite" style={{ alignSelf: 'flex-end', paddingBottom: 10 }}>
             {data ? `${data.length} application(s)` : ''}
           </p>
         </div>
@@ -150,8 +152,8 @@ export default function LeaveReview() {
         {pending && (
           <p>
             {pending.decision === 'Approved' ? 'Approve' : 'Reject'} leave <Mono>{pending.leave.leave_id}</Mono> for{' '}
-            <strong>{pending.leave.employee_name}</strong>: {pending.leave.leave_type}, {date(pending.leave.leave_start)} – {date(pending.leave.leave_end)} (
-            {pending.leave.leave_days} day(s))? This cannot be changed afterwards.
+            <strong>{pending.leave.employee_name}</strong>: {pending.leave.leave_type} leave, {date(pending.leave.leave_start)} – {date(pending.leave.leave_end)},{' '}
+            {pending.leave.leave_days} day(s)? This cannot be changed afterwards.
           </p>
         )}
       </ConfirmDialog>
