@@ -1,0 +1,356 @@
+                      Group Number 2
+
+Project Topic: Office Employee
+      Management System
+
+Group Members:
+
+Mercy Mochary — Roll No. 2
+SK Irfan Akhtar — Roll No. 26
+Bazilur Rahman Bazigh — Roll No. 41
+Sourin Das — Roll No. 44
+1. Functional Requirements (FR)
+
+The functional requirements below are derived from the Use Case Diagram for the Office Employee
+Management System. They describe the services and operations the system must provide to its identified
+actors. Each requirement explicitly identifies the related use case, actors, and assumptions, as required.
+Requirement and use case numbers follow the labels in the diagram.
+
+Common precondition: for every use case below, the user is authenticated and has been assigned a valid
+role. Access is restricted according to that role as described in NFR-21 and NFR-22.
+
+FR-1 — UC-01 – Mark Attendance
+
+The system shall allow an Employee to record attendance for the applicable working period and store the
+attendance entry against the employee record. The actor involved is Employee. Assumption: the employee is
+authenticated and attendance marking is permitted for the relevant date or working period.
+
+FR-2 — UC-02 – View Attendance
+
+The system shall allow authorized users to view attendance information. An Employee can view only their own
+attendance, and the HR Manager can view attendance of all employees. The attendance information is also
+used by Generate Financial/Payroll Report (UC-17) through an <<include>> relationship. The actors involved
+are Employee and HR Manager. Assumption: attendance data has been recorded and the requesting user has
+permission to view it.
+
+FR-3 — UC-03 – Apply Leave
+
+The system shall allow an Employee to submit a leave application containing the required leave details for
+processing. The actor involved is Employee. Assumption: the employee is authenticated, eligible to apply for
+leave, and provides all required information.
+
+FR-4 — UC-04 – Manage Leave
+
+The system shall allow the HR Manager to review, approve or reject, update, and process submitted leave
+applications and maintain the leave status. The actor involved is HR Manager. Assumption: a leave application
+has been submitted through UC-03 and leave rules or approval permissions are configured.
+
+FR-5 — UC-05 – Manage Profile
+
+The system shall allow an Employee to view and update permitted personal profile information. The actor
+involved is Employee. Assumption: the employee is authenticated and only fields permitted for self-service
+editing are changed.
+
+FR-6 — UC-06 – Register Employee
+
+The system shall allow the HR Manager to register a new employee by entering the required employee
+information and creating the corresponding employee record. The actor involved is HR Manager. Assumption:
+the new employee does not already have a duplicate active record and all mandatory registration information is
+available.
+
+FR-7 — UC-07 – Manage Records
+
+The system shall allow the HR Manager to view, update, and maintain employee records. The actor involved is
+HR Manager. Assumption: the HR Manager is authenticated and the employee record being managed is within
+the system's scope.
+
+FR-9 — UC-09 – Manage Vacancies
+
+The system shall allow the Recruitment Officer to create, view, update, and close job vacancy information. The
+actor involved is Recruitment Officer. Assumption: the Recruitment Officer is authorized to manage vacancies
+and provides the required vacancy details.
+
+FR-10 — UC-10 – Schedule Interviews
+
+The system shall allow the Recruitment Officer to create and manage interview schedules for candidates,
+including relevant date, time, and interview information. The actor involved is Recruitment Officer. Assumption:
+candidate information is available and the selected interview slot is valid.
+
+Office Employee Management System  Page 2
+FR-11 — UC-11 – View Salary
+
+The system shall allow authorized users to view salary information relevant to their role. An Employee can view
+only their own salary information, while the HR Manager, Payroll Officer, and Finance Manager can view salary
+information of employees as required by their responsibilities. The actors involved are Employee, HR Manager,
+Payroll Officer, and Finance Manager. Assumption: salary information exists for the employee and access
+rights permit the requested view.
+
+FR-12 — UC-12 – Calculate Salary
+
+The system shall calculate employee salary using the configured salary information and applicable payroll
+inputs maintained by the system. The calculated salary is used by Generate Payslip (UC-13), Manage Payroll
+(UC-14), and Generate Financial/Payroll Report (UC-17) through an <<include>> relationship. No actor is
+directly associated with this use case in the diagram. Assumption: required salary, attendance, leave, and other
+applicable payroll data are accurate and available.
+
+FR-13 — UC-13 – Generate Payslip
+
+The system shall generate a payslip containing the applicable salary and payroll details for an employee.
+Payslip generation includes the salary calculation performed by UC-12. No actor is directly associated with this
+use case in the diagram. Assumption: the employee's payroll inputs and salary information have been recorded
+and are available for calculation.
+
+FR-14 — UC-14 – Manage Payroll
+
+The system shall manage payroll information and payroll processing activities, including maintaining payroll
+data and processing salary for the payroll period. Payroll processing includes the salary calculation performed
+by UC-12. No actor is directly associated with this use case in the diagram. Assumption: required employee and
+salary data are available and access is restricted to authorized users.
+
+FR-15 — UC-15 – View Payroll Records
+
+The system shall allow the Payroll Officer to view employee and payroll records required for payroll processing
+and verification. The payroll records are also used by Generate Financial/Payroll Report (UC-17) through an
+<<include>> relationship. The actor involved is Payroll Officer. Assumption: the requested records exist and the
+Payroll Officer has appropriate access rights.
+
+FR-16 — UC-16 – Generate HR Report
+
+The system shall allow the HR Manager to generate human-resource reports based on available records, such
+as attendance, leave, and employee information. The actor involved is HR Manager. Assumption: sufficient and
+valid source data is available and the HR Manager has reporting permission.
+
+FR-17 — UC-17 – Generate Financial/Payroll Report
+
+The system shall allow the Finance Manager to generate financial and payroll reports based on salary and
+payroll records for financial oversight. Report generation includes the attendance information provided by View
+Attendance (UC-02), the salary calculation performed by Calculate Salary (UC-12), and the records provided by
+View Payroll Records (UC-15). The actor involved is Finance Manager. Assumption: sufficient and valid payroll
+and salary data is available and the Finance Manager has reporting permission.
+
+FR-19 — UC-19 – Generate Offer Letter
+
+The system shall allow the Recruitment Officer to generate an offer letter for a selected candidate, containing
+the position, offer terms, and joining details. The actor involved is Recruitment Officer. Assumption: the
+candidate has been selected for a vacancy and the offer details are available.
+
+FR-20 — UC-20 – Manage Retirement Plans
+
+The system shall allow the HR Manager to create, view, update, and maintain retirement plan information for
+employees, such as retirement dates and related details. The actor involved is HR Manager. Assumption: the
+employee record exists and the required retirement information is available.
+
+Office Employee Management System  Page 3
+2. Non-Functional Requirements (NFR)
+
+The following non-functional requirements specify quality, security, reliability, integrity, performance, and
+usability expectations associated with the functional requirements.
+
+NFR-1 — Associated with FR-1
+
+Attendance entries shall be recorded accurately and shall prevent duplicate or inconsistent submissions for the
+same working period.
+
+NFR-2 — Associated with FR-2
+
+Attendance information shall be displayed accurately and within a reasonable response time. Employees shall
+see only their own records, and access to other attendance records shall be limited to authorized roles.
+
+NFR-3 — Associated with FR-3
+
+Leave applications shall validate required fields before submission and shall preserve the submitted information
+accurately.
+
+NFR-4 — Associated with FR-4
+
+Leave records shall remain consistent throughout review, approval, and processing. Unauthorized users shall
+not be able to alter leave information, and every status change shall be traceable to the user who made it.
+
+NFR-5 — Associated with FR-5
+
+Profile updates shall validate input data and protect personal information from unauthorized access or
+modification.
+
+NFR-6 — Associated with FR-6
+
+Employee registration shall validate mandatory information and prevent duplicate employee identifiers. Newly
+created records shall be stored reliably.
+
+NFR-7 — Associated with FR-7
+
+Employee records shall maintain data integrity, and updates shall be traceable to the authorized user making
+the change.
+
+NFR-9 — Associated with FR-9
+
+Vacancy information shall be consistently maintained, with validation of required fields and controlled access to
+recruitment data.
+
+NFR-10 — Associated with FR-10
+
+Interview schedules shall be stored accurately and should minimize conflicting or ambiguous scheduling
+information.
+
+NFR-11 — Associated with FR-11
+
+Salary information shall be confidential, accurate, and accessible only to authorized roles. An Employee shall
+not be able to view the salary of another employee.
+
+NFR-12 — Associated with FR-12
+
+Salary calculations shall be consistent and reproducible for the same valid inputs. The system shall preserve
+calculation accuracy and protect payroll data.
+
+Office Employee Management System  Page 4
+NFR-13 — Associated with FR-13
+
+Payslips shall accurately reflect the payroll calculation data and shall be accessible only to authorized users.
+Generated payslips should have a consistent and readable format.
+
+NFR-14 — Associated with FR-14
+
+Payroll data shall maintain integrity during creation or modification, with role-based authorization and reliable
+storage of processed information.
+
+NFR-15 — Associated with FR-15
+
+Payroll records shall load reliably and remain confidential. The system should provide sufficient response speed
+for routine payroll verification.
+
+NFR-16 — Associated with FR-16
+
+HR reports shall be generated from consistent data, shall include only the information the HR Manager is
+permitted to access, and shall be presented in a readable format within a reasonable response time.
+
+NFR-17 — Associated with FR-17
+
+Financial and payroll reports shall be generated from consistent and accurate payroll data, shall be accessible
+only to the Finance Manager, and shall be presented in a readable format within a reasonable response time.
+
+NFR-19 — Associated with FR-19
+
+Offer letters shall accurately reflect the selected candidate and offer details, shall be presented in a consistent
+and readable format, and shall be accessible only to authorized recruitment users.
+
+NFR-20 — Associated with FR-20
+
+Retirement plan information shall be stored accurately and kept confidential, shall be modifiable only by
+authorized HR users, and updates shall be traceable to the user making the change.
+
+NFR-21 — Associated with all FRs (Role-Based Access Control)
+
+Role-based access control shall be enforced consistently across the system so that users can perform only the
+operations permitted for their assigned role. Unauthorized attempts to access restricted functions or records
+shall be denied.
+
+NFR-22 — Associated with all FRs (Authentication and Session Security)
+
+Users shall be authenticated with valid credentials before using any function of the system. Credentials shall be
+protected, and an active session shall be terminated securely on sign-out or after a period of inactivity so that
+an unattended session cannot be used by another person.
+
+Office Employee Management System  Page 5
+3. System Scope and Actor Summary
+
+The Office Employee Management System is intended to centralize employee-related information and
+routine human-resource, recruitment, attendance, leave, payroll, salary, and reporting activities. The supplied
+diagram identifies five external actors: Employee, HR Manager, Recruitment Officer, Payroll Officer, and
+Finance Manager. The system supports role-specific access so that each actor can perform the operations
+relevant to their responsibilities.
+
+Employee: Marks attendance, applies for leave, manages their own profile, and views their own attendance
+(UC-02) and salary (UC-11).
+
+HR Manager: Registers employees, maintains employee records, manages leave, manages retirement plans,
+views attendance and salary information, and generates HR reports.
+
+Recruitment Officer: Manages job vacancies, schedules interviews, and generates offer letters for recruitment
+activities.
+
+Payroll Officer: Views salary information and payroll records.
+
+Finance Manager: Views salary information and generates financial/payroll reports for financial oversight.
+
+Payroll processing: Calculate Salary (UC-12), Generate Payslip (UC-13), and Manage Payroll (UC-14) are
+not directly associated with an actor in the diagram. UC-13 and UC-14 include UC-12, which is also included by
+UC-17.
+
+Use Case and Actor Matrix
+
+UC  Use Case                          Employee                HR   Recruitment  Payroll  Finance No.
+                                                          Manager     Officer   Officer  Manager
+                                          s
+01 Mark Attendance                        s                   s          s         s        1
+02 View Attendance                        s                   s          s         s
+03 Apply Leave                            s                   s                             2
+04 Manage Leave                                               s          s
+05 Manage Profile                         s                                                 1
+06 Register Employee                                          s
+07 Manage Records                                                                           1
+09 Manage Vacancies                                           s
+10 Schedule Interviews                                                                      1
+11 View Salary                                                s
+12 Calculate Salary                                                                         1
+13 Generate Payslip
+14 Manage Payroll                                                                           1
+15 View Payroll Records
+16 Generate HR Report                                                                       1
+17 Generate Financial/Payroll Report
+19 Generate Offer Letter                                                                    1
+20 Manage Retirement Plans
+                                                                                         s  4
+
+                                                                                            0
+
+                                                                                            0
+
+                                                                                            0
+
+                                                                                            1
+
+                                                                                            1
+
+                                                                                         s  1
+
+                                                                                            1
+
+                                                                                            1
+
+Shaded rows are use cases shared by more than one actor.
+
+Office Employee Management System                                                           Page 6
+Use Cases Shared by Multiple Actors
+
+UC-02 View Attendance (2 actors): Employee, HR Manager. The Employee sees only their own attendance,
+and the HR Manager sees all employees.
+
+UC-11 View Salary (4 actors): Employee, HR Manager, Payroll Officer, Finance Manager. The Employee sees
+only their own salary, and the other actors view salary information as required by their role.
+
+Office Employee Management System  Page 7
+4. Use Case Diagram Reference
+
+Figure 1: Use Case Diagram for the Office Employee Management System.
+
+Relationships shown in the diagram
+
+The diagram contains the following <<include>> relationships. In each case, the dependent use case requires
+the included use case to complete its function.
+
+• UC-13 Generate Payslip and UC-14 Manage Payroll both depend on UC-12 Calculate Salary, because
+   every payslip and every payroll run requires a salary calculation.
+
+• UC-17 Generate Financial/Payroll Report depends on UC-02 View Attendance, UC-12 Calculate Salary,
+   and UC-15 View Payroll Records, because financial and payroll reports are built from attendance, calculated
+   salary, and payroll records.
+
+All other use cases are connected directly to their actors, except UC-12, UC-13, and UC-14, which are not
+directly associated with an actor in the diagram.
+
+The Director actor, UC-08 View Organizational Records, and UC-18 Generate Organization Summary Report
+do not appear in the revised diagram and have been removed. UC-19 Generate Offer Letter and UC-20
+Manage Retirement Plans have been added. The remaining use cases keep the numbers shown in the
+diagram.
+
+Office Employee Management System  Page 8
+
