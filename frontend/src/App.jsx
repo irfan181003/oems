@@ -23,6 +23,11 @@ import LeaveReview from './pages/hr/LeaveReview';
 import RetirementPlans from './pages/hr/RetirementPlans';
 import HrReports from './pages/hr/HrReports';
 import SalaryView from './pages/shared/SalaryView';
+import Vacancies from './pages/recruitment/Vacancies';
+import Candidates from './pages/recruitment/Candidates';
+import Interviews from './pages/recruitment/Interviews';
+import Offers from './pages/recruitment/Offers';
+import OfferLetter from './pages/recruitment/OfferLetter';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -78,11 +83,11 @@ export default function App() {
         {/* Recruitment Officer — UC-09, UC-10, UC-19 (+ candidates, A-3) */}
         <Route path="recruitment" element={only(ROLES.RECRUITMENT)}>
           <Route index element={<Navigate to="vacancies" replace />} />
-          <Route path="vacancies" element={<Pending title="Vacancies" phase={4} />} />
-          <Route path="candidates" element={<Pending title="Candidates" phase={4} />} />
-          <Route path="interviews" element={<Pending title="Interviews" phase={4} />} />
-          <Route path="offers" element={<Pending title="Offers" phase={4} />} />
-          <Route path="offers/:offer_id/letter" element={<Pending title="Offer Letter" phase={4} />} />
+          <Route path="vacancies" element={<Vacancies />} />
+          <Route path="candidates" element={<Candidates />} />
+          <Route path="interviews" element={<Interviews />} />
+          <Route path="offers" element={<Offers />} />
+          <Route path="offers/:offer_id/letter" element={<OfferLetter />} />
         </Route>
 
         {/* Payroll Officer — UC-11, UC-12, UC-13, UC-14, UC-15 */}
