@@ -40,6 +40,7 @@ function loadForReader(req) {
 }
 
 // UC-13 | FR-13 | Process 0.6.1, 0.6.2, 0.6.3 | BR-20, BR-21 | NFR-13 — DS-45 Payslip Generation Status
+// ASSUMPTION A-9: UC-13 has no actor in Assignment 2; the Payroll Officer generates payslips (DFD 0.6).
 router.post('/generate', requireRole('Payroll Officer'), auditFailures('PAYSLIP', 'GENERATE'), validate({ body: generateBody }), (req, res) => {
   const r = service.generate(getDb(), req.user, req.body);
   return ok(res, {

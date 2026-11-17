@@ -16,6 +16,8 @@ const store = require('./store');
 const { z } = f;
 const router = express.Router();
 // BR-30: payroll records are visible only to the Payroll Officer (Finance sees payroll only through reports)
+// ASSUMPTION A-9: Assignment 2 links UC-12/UC-14 to no actor; the DFD (DS-31) has the Payroll Officer
+// drive Process 0.5, so the Payroll Officer runs payroll and changes payroll status.
 router.use(authenticate, requireRole('Payroll Officer'));
 
 const payPeriod = f.text('Pay period').regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Pay period must be a valid month in YYYY-MM format');

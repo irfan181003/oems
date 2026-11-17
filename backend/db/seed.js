@@ -1,6 +1,7 @@
 'use strict';
-// npm run seed - idempotent demo data (BACKEND_PROMPT section 10).
-// Phase 1: one user per role. Later phases add attendance, leave, recruitment, payroll data.
+// npm run seed - idempotent demo data (BACKEND_PROMPT section 10): one user per role, two months of
+// attendance, leave in every status, 2 vacancies, 3 candidates, interviews, an offer, a retirement plan
+// and one processed payroll month with payslips.
 // ASSUMPTION A-2: roles other than Employee exist only through this seed.
 const bcrypt = require('bcryptjs');
 const config = require('../src/config');
@@ -70,8 +71,170 @@ function seedUsers(db, password) {
   return { employees, accounts: toCreate.length };
 }
 
+// ---------------------------------------------------------------- demo data (section 10)
+// Each section runs only when its table(s) are empty, so the seed is idempotent.
+// Past-dated rows are inserted directly (the API correctly refuses past dates);
+// payroll and payslips go through the real services so amounts come from the real calculator.
+
+const count = (db, table) => db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n;
+
+function prevPeriod(period, n) {
+  let [y, m] = period.split('-').map(Number);
+  m -= n;
+  while (m < 1) {
+    m += 12;
+    y -= 1;
+  }
+  return `${y}-${String(m).padStart(2, '0')}`;
+}
+
+/** Monday-Friday dates of a YYYY-MM period. */
+function weekdays(period) {
+  const { start, end } = dates.periodBounds(period);
+  const out = [];
+  for (let d = start; d <= end; d = dates.addDays(d, 1)) {
+    const dow = new Date(`${d}T00:00:00Z`).getUTCDay();
+    if (dow !== 0 && dow !== 6) out.push(d);
+  }
+  return out;
+}
+
+const actorOf = (employeeId) => {
+  const e = SEED_EMPLOYEES.find((x) => x.employee_id === employeeId);
+  return { employee_id: e.employee_id, role: e.role, name: e.employee_name };
+};
+
+function seedLeaves(db, P, P2) {
+  if (count(db, 'LEAVE_APPLICATION') > 0) return 0;
+  const { nextId } = require('../src/lib/ids');
+  const today = dates.today();
+  const wP = weekdays(P);
+  const wP2 = weekdays(P2);
+  const rows = [
+    // [employee, type, start, end, status, remarks]
+    ['EMP00005', 'Casual', wP[5], wP[6], 'Approved', 'Approved'],
+    ['EMP00006', 'Earned', wP[10], wP[10], 'Rejected', 'Project deadline that week'],
+    ['EMP00007', 'Sick', wP2[3], wP2[4], 'Approved', 'Get well soon'],
+    ['EMP00008', 'Unpaid', wP[12], wP[14], 'Approved', 'Approved as unpaid leave'],
+    ['EMP00009', 'Casual', dates.addDays(today, 7), dates.addDays(today, 8), 'Pending', null],
+    ['EMP00010', 'Sick', dates.addDays(today, 3), dates.addDays(today, 3), 'Pending', null],
+  ];
+  const ins = db.prepare(
+    `INSERT INTO LEAVE_APPLICATION (leave_id, employee_id, leave_type, leave_start, leave_end, leave_days, leave_reason,
+       applied_date, leave_status, approved_by, decision_date, hr_remarks)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  db.transaction(() => {
+    for (const [emp, type, start, end, status, remarks] of rows) {
+      const applied = status === 'Pending' ? today : dates.addDays(start, -3);
+      const decided = status === 'Pending' ? null : dates.addDays(start, -2);
+      ins.run(nextId(db, 'LEAVE_APPLICATION'), emp, type, start, end, dates.daysInclusive(start, end), `${type} leave (demo)`,
+        applied, status, status === 'Pending' ? null : 'EMP00001', decided, remarks);
+    }
+  })();
+  return rows.length;
+}
+
+function seedAttendance(db, periods) {
+  if (count(db, 'ATTENDANCE') > 0) return 0;
+  const onLeave = db.prepare(
+    "SELECT 1 FROM LEAVE_APPLICATION WHERE employee_id = ? AND leave_status = 'Approved' AND ? BETWEEN leave_start AND leave_end"
+  );
+  const ins = db.prepare(
+    `INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, checkout_time, att_status, recorded_ts)
+     VALUES (?, ?, ?, ?, ?, 'Present', ?)`
+  );
+  const { formatId, nextId } = require('../src/lib/ids');
+  let seq = Number(nextId(db, 'ATTENDANCE').slice(3));
+  let n = 0;
+  db.transaction(() => {
+    for (const period of periods) {
+      weekdays(period).forEach((d, dayIdx) => {
+        SEED_EMPLOYEES.forEach((e, empIdx) => {
+          if (onLeave.get(e.employee_id, d)) return;
+          if ((dayIdx * 7 + empIdx * 3) % 17 === 0) return; // a few absences
+          const inMin = (dayIdx + empIdx) % 30;
+          const outMin = (dayIdx * 3 + empIdx) % 60;
+          const checkin = `09:${String(inMin).padStart(2, '0')}:00`;
+          const checkout = `${17 + (outMin % 2)}:${String(outMin).padStart(2, '0')}:00`;
+          ins.run(formatId('ATTENDANCE', seq), e.employee_id, d, checkin, checkout, `${d} ${checkout}`);
+          seq += 1;
+          n += 1;
+        });
+      });
+    }
+  })();
+  return n;
+}
+
+function seedRecruitment(db) {
+  if (count(db, 'VACANCY') > 0) return false;
+  const today = dates.today();
+  db.transaction(() => {
+    const v = db.prepare(
+      'INSERT INTO VACANCY (vacancy_id, job_title, department, positions, qualifications, vacancy_status, posted_date) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    );
+    v.run('VAC00001', 'Backend Developer', 'Engineering', 2, 'B.Tech/MCA; 2+ years with Node.js and SQL', 'Open', dates.addDays(today, -20));
+    v.run('VAC00002', 'Sales Executive', 'Sales', 1, 'Graduate; 1+ year field sales experience', 'Open', dates.addDays(today, -15));
+    const c = db.prepare('INSERT INTO CANDIDATE (candidate_id, vacancy_id, candidate_name, candidate_email, candidate_phone) VALUES (?, ?, ?, ?, ?)');
+    c.run('CAN00001', 'VAC00001', 'Priya Sen', 'priya.sen@example.com', '9830000001');
+    c.run('CAN00002', 'VAC00001', 'Amit Bose', 'amit.bose@example.com', '9830000002');
+    c.run('CAN00003', 'VAC00002', 'Ritu Ghosh', 'ritu.ghosh@example.com', null);
+    const i = db.prepare(
+      `INSERT INTO INTERVIEW_SCHEDULE (interview_id, candidate_id, vacancy_id, interview_date, interview_time, interview_venue, interviewer_name, interview_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    i.run('INT0000001', 'CAN00001', 'VAC00001', dates.addDays(today, -5), '10:00', 'Conference Room 1', 'Rahul Verma', 'Selected');
+    i.run('INT0000002', 'CAN00002', 'VAC00001', dates.addDays(today, 3), '11:00', 'Conference Room 1', 'Rahul Verma', 'Scheduled');
+    i.run('INT0000003', 'CAN00003', 'VAC00002', dates.addDays(today, 4), '15:00', 'Online meeting', 'Rahul Verma', 'Scheduled');
+    db.prepare(
+      `INSERT INTO OFFER (offer_id, candidate_id, vacancy_id, offer_position, offered_salary, joining_date, offer_issue_date, offer_status)
+       VALUES ('OFR0000001', 'CAN00001', 'VAC00001', 'Backend Developer', 60000, ?, ?, 'Issued')`
+    ).run(dates.addDays(today, 30), dates.addDays(today, -2));
+  })();
+  return true;
+}
+
+function seedRetirement(db) {
+  if (count(db, 'RETIREMENT_PLAN') > 0) return false;
+  db.prepare(
+    `INSERT INTO RETIREMENT_PLAN (ret_plan_id, employee_id, retirement_date, plan_type, contribution_amount, nominee_name, plan_status)
+     VALUES ('RP000001', 'EMP00004', '2042-11-05', 'Provident Fund', 5000, 'Meera Singh', 'Active')`
+  ).run();
+  return true;
+}
+
+function seedPayroll(db, P) {
+  if (count(db, 'PAYROLL') > 0) return null;
+  const { runPayroll } = require('../src/modules/payroll/service');
+  const payslips = require('../src/modules/payslips/service');
+  const lines = db
+    .prepare("SELECT employee_id FROM EMPLOYEE WHERE employment_status = 'Active' ORDER BY employee_id")
+    .all()
+    .map((e, idx) => ({ employee_id: e.employee_id, allowances_paise: (1000 + 500 * (idx % 3)) * 100, other_deductions_paise: idx % 4 === 0 ? 20000 : 0 }));
+  const run = runPayroll(db, actorOf('EMP00003'), { pay_period: P, working_days: weekdays(P).length, lines });
+  const slips = payslips.generate(db, actorOf('EMP00003'), { pay_period: P });
+  return { pay_period: P, processed: run.employees_processed, failed: run.failed.length, payslips: slips.payslip_count };
+}
+
+/** Demo data relative to today: the two previous months of attendance, one processed payroll month. */
+function seedDemoData(db) {
+  const cur = dates.currentPeriod();
+  const P = prevPeriod(cur, 1);
+  const P2 = prevPeriod(cur, 2);
+  const leaves = seedLeaves(db, P, P2);
+  const attendance = seedAttendance(db, [P2, P]);
+  return {
+    leaves,
+    attendance,
+    recruitment: seedRecruitment(db),
+    retirement_plan: seedRetirement(db),
+    payroll: seedPayroll(db, P),
+  };
+}
+
 function seedAll(db, password) {
-  return { users: seedUsers(db, password) };
+  return { users: seedUsers(db, password), demo: seedDemoData(db) };
 }
 
 if (require.main === module) {
@@ -89,4 +252,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { SEED_EMPLOYEES, seedUsers, seedAll };
+module.exports = { SEED_EMPLOYEES, seedUsers, seedDemoData, seedAll, weekdays, prevPeriod };

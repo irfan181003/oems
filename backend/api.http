@@ -1,0 +1,360 @@
+### Office Employee Management System (Group 02) - one request per endpoint.
+### Works with the VS Code "REST Client" extension (or JetBrains HTTP Client).
+### Prerequisite: npm run seed && npm start. Password = SEED_PASSWORD from .env (default ChangeMe@123).
+### Run the five login requests first; later requests reuse their tokens.
+### IDs below (VAC00001, CAN00002, PAY000000001, ...) match the demo seed. Adjust {{period}} to last month.
+
+@baseUrl = http://localhost:4000/api
+@password = ChangeMe@123
+@period = 2026-10
+
+###############################################################################
+# Health + authentication (NFR-22, BR-27; ASSUMPTION A-2)
+###############################################################################
+
+### Health (public)
+GET {{baseUrl}}/health
+
+### Login - Employee (EMP00005)
+# @name loginEmp
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "login": "EMP00005", "password": "{{password}}" }
+
+### Login - HR Manager (EMP00001), by e-mail
+# @name loginHr
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "login": "anita.sharma@example.com", "password": "{{password}}" }
+
+### Login - Recruitment Officer (EMP00002)
+# @name loginRo
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "login": "EMP00002", "password": "{{password}}" }
+
+### Login - Payroll Officer (EMP00003)
+# @name loginPo
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "login": "EMP00003", "password": "{{password}}" }
+
+### Login - Finance Manager (EMP00004)
+# @name loginFm
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "login": "EMP00004", "password": "{{password}}" }
+
+@emp = {{loginEmp.response.body.data.token}}
+@hr = {{loginHr.response.body.data.token}}
+@ro = {{loginRo.response.body.data.token}}
+@po = {{loginPo.response.body.data.token}}
+@fm = {{loginFm.response.body.data.token}}
+
+### Who am I
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{emp}}
+
+###############################################################################
+# Process 0.1 Manage Attendance - UC-01, UC-02 (BR-01, BR-02, BR-03)
+###############################################################################
+
+### Check in (Employee; server sets date/time)
+POST {{baseUrl}}/attendance/check-in
+Authorization: Bearer {{emp}}
+
+### Check out (Employee)
+POST {{baseUrl}}/attendance/check-out
+Authorization: Bearer {{emp}}
+
+### Own attendance + days-present summary (Employee)
+GET {{baseUrl}}/attendance/me?from={{period}}-01&to={{period}}-28
+Authorization: Bearer {{emp}}
+
+### All employees' attendance (HR Manager)
+GET {{baseUrl}}/attendance?from={{period}}-01&to={{period}}-28&employee_id=EMP00006
+Authorization: Bearer {{hr}}
+
+###############################################################################
+# Process 0.2 Manage Leave - UC-03, UC-04 (BR-04 ... BR-07)
+###############################################################################
+
+### Apply for leave (Employee) - dates must be today or later
+# @name applyLeave
+POST {{baseUrl}}/leaves
+Authorization: Bearer {{emp}}
+Content-Type: application/json
+
+{ "leave_type": "Casual", "leave_start": "2030-01-06", "leave_end": "2030-01-07", "leave_reason": "Family function" }
+
+### Own leave applications and status (Employee)
+GET {{baseUrl}}/leaves/me
+Authorization: Bearer {{emp}}
+
+### Review list (HR Manager)
+GET {{baseUrl}}/leaves?status=Pending
+Authorization: Bearer {{hr}}
+
+### One application (HR Manager or the owner)
+GET {{baseUrl}}/leaves/{{applyLeave.response.body.data.leave_id}}
+Authorization: Bearer {{hr}}
+
+### Approve / reject (HR Manager) - response is the Leave Status Notice
+PATCH {{baseUrl}}/leaves/{{applyLeave.response.body.data.leave_id}}/decision
+Authorization: Bearer {{hr}}
+Content-Type: application/json
+
+{ "decision": "Approved", "hr_remarks": "Enjoy" }
+
+###############################################################################
+# Process 0.3 Manage Employee Records - UC-05, UC-06, UC-07, UC-20 (BR-08 ... BR-11, BR-24, BR-25)
+###############################################################################
+
+### Own profile (Employee)
+GET {{baseUrl}}/profile/me
+Authorization: Bearer {{emp}}
+
+### Update own profile - contact_number, email, address only (Employee)
+PATCH {{baseUrl}}/profile/me
+Authorization: Bearer {{emp}}
+Content-Type: application/json
+
+{ "contact_number": "9000000005", "address": "22 Lake Town, Kolkata" }
+
+### Register employee (HR Manager) - returns a one-time temporary password
+# @name registerEmp
+POST {{baseUrl}}/employees
+Authorization: Bearer {{hr}}
+Content-Type: application/json
+
+{
+  "employee_name": "Nikhil Paul",
+  "date_of_birth": "1998-03-14",
+  "gender": "M",
+  "contact_number": "9123400011",
+  "email": "nikhil.paul@example.com",
+  "address": "8 Elgin Road, Kolkata",
+  "department": "Operations",
+  "designation": "Operations Executive",
+  "date_of_joining": "2026-11-01",
+  "basic_salary": 32000,
+  "bank_account": "200300400011"
+}
+
+### List employees (HR Manager) - bank account masked
+GET {{baseUrl}}/employees?department=Engineering&status=Active
+Authorization: Bearer {{hr}}
+
+### One employee (HR Manager)
+GET {{baseUrl}}/employees/EMP00006
+Authorization: Bearer {{hr}}
+
+### Update employee fields (HR Manager) - sets last_updated_by / last_updated_ts
+PATCH {{baseUrl}}/employees/EMP00006
+Authorization: Bearer {{hr}}
+Content-Type: application/json
+
+{ "designation": "Lead Engineer" }
+
+### Create retirement plan (HR Manager) - retirement_date > date_of_joining
+# @name createPlan
+POST {{baseUrl}}/retirement-plans
+Authorization: Bearer {{hr}}
+Content-Type: application/json
+
+{ "employee_id": "EMP00006", "retirement_date": "2054-06-30", "plan_type": "Pension", "contribution_amount": 3000, "nominee_name": "Asha Mehta" }
+
+### List retirement plans (HR Manager)
+GET {{baseUrl}}/retirement-plans?employee_id=EMP00004
+Authorization: Bearer {{hr}}
+
+### One retirement plan (HR Manager)
+GET {{baseUrl}}/retirement-plans/RP000001
+Authorization: Bearer {{hr}}
+
+### Update retirement plan (HR Manager)
+PATCH {{baseUrl}}/retirement-plans/RP000001
+Authorization: Bearer {{hr}}
+Content-Type: application/json
+
+{ "contribution_amount": 5500 }
+
+###############################################################################
+# Process 0.4 Manage Recruitment - UC-09, UC-10, UC-19 (BR-12, BR-13, BR-14, BR-29; A-3)
+###############################################################################
+
+### Create vacancy (Recruitment Officer)
+# @name createVac
+POST {{baseUrl}}/vacancies
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "job_title": "QA Engineer", "department": "Engineering", "positions": 1, "qualifications": "B.Tech; test automation" }
+
+### List vacancies
+GET {{baseUrl}}/vacancies?status=Open
+Authorization: Bearer {{ro}}
+
+### One vacancy
+GET {{baseUrl}}/vacancies/VAC00001
+Authorization: Bearer {{ro}}
+
+### Update vacancy
+PATCH {{baseUrl}}/vacancies/VAC00002
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "positions": 2 }
+
+### Close vacancy
+POST {{baseUrl}}/vacancies/{{createVac.response.body.data.vacancy_id}}/close
+Authorization: Bearer {{ro}}
+
+### Register candidate (A-3) - vacancy must be Open
+POST {{baseUrl}}/candidates
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "vacancy_id": "VAC00002", "candidate_name": "Sohini Kar", "candidate_email": "sohini.kar@example.com", "candidate_phone": "9830000004" }
+
+### List candidates
+GET {{baseUrl}}/candidates?vacancy_id=VAC00001
+Authorization: Bearer {{ro}}
+
+### Schedule interview - not in the past, no clash for candidate or venue
+POST {{baseUrl}}/interviews
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "candidate_id": "CAN00002", "interview_date": "2030-01-08", "interview_time": "10:30", "interview_venue": "Conference Room 2", "interviewer_name": "Rahul Verma" }
+
+### List interviews
+GET {{baseUrl}}/interviews?vacancy_id=VAC00001
+Authorization: Bearer {{ro}}
+
+### One interview
+GET {{baseUrl}}/interviews/INT0000002
+Authorization: Bearer {{ro}}
+
+### Reschedule / change interview status
+PATCH {{baseUrl}}/interviews/INT0000002
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "interview_status": "Selected" }
+
+### Generate offer - candidate's latest interview must be Selected
+POST {{baseUrl}}/offers
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "candidate_id": "CAN00002", "offered_salary": 58000, "joining_date": "2030-02-01" }
+
+### List offers
+GET {{baseUrl}}/offers
+Authorization: Bearer {{ro}}
+
+### One offer
+GET {{baseUrl}}/offers/OFR0000001
+Authorization: Bearer {{ro}}
+
+### Printable offer letter (HTML, from the stored OFFER row)
+GET {{baseUrl}}/offers/OFR0000001/letter
+Authorization: Bearer {{ro}}
+
+### Update offer status
+PATCH {{baseUrl}}/offers/OFR0000001/status
+Authorization: Bearer {{ro}}
+Content-Type: application/json
+
+{ "offer_status": "Accepted" }
+
+###############################################################################
+# Process 0.5 Manage Payroll - UC-11, UC-12, UC-14, UC-15 (BR-15 ... BR-19, BR-28, BR-30)
+###############################################################################
+
+### Run payroll (Payroll Officer). Omit "lines" to process every Active employee.
+### Re-running an already processed period reports the employees as skipped (BR-19).
+POST {{baseUrl}}/payroll/run
+Authorization: Bearer {{po}}
+Content-Type: application/json
+
+{
+  "pay_period": "{{period}}",
+  "working_days": 21,
+  "lines": [
+    { "employee_id": "EMP00005", "allowances": 2000, "other_deductions": 0 },
+    { "employee_id": "EMP00006", "allowances": 1500, "other_deductions": 250 }
+  ]
+}
+
+### Payroll records (Payroll Officer only)
+GET {{baseUrl}}/payroll/records?pay_period={{period}}
+Authorization: Bearer {{po}}
+
+### One payroll record
+GET {{baseUrl}}/payroll/records/PAY000000001
+Authorization: Bearer {{po}}
+
+### Payroll status: Processed -> Paid, Processed <-> On Hold
+PATCH {{baseUrl}}/payroll/records/PAY000000001/status
+Authorization: Bearer {{po}}
+Content-Type: application/json
+
+{ "payroll_status": "Paid" }
+
+### Own salary, payroll lines and payslips (Employee; A-4)
+GET {{baseUrl}}/salary/me
+Authorization: Bearer {{emp}}
+
+### Salary of employees (HR Manager, Payroll Officer, Finance Manager)
+GET {{baseUrl}}/salary?pay_period={{period}}
+Authorization: Bearer {{fm}}
+
+###############################################################################
+# Process 0.6 Generate Payslips - UC-13 (BR-20, BR-21)
+###############################################################################
+
+### Generate payslips for a period (Payroll Officer)
+POST {{baseUrl}}/payslips/generate
+Authorization: Bearer {{po}}
+Content-Type: application/json
+
+{ "pay_period": "{{period}}" }
+
+### List payslips (Payroll Officer)
+GET {{baseUrl}}/payslips?pay_period={{period}}
+Authorization: Bearer {{po}}
+
+### One payslip with breakdown (Payroll Officer or the owner)
+GET {{baseUrl}}/payslips/PS0000000005
+Authorization: Bearer {{emp}}
+
+### Download payslip PDF (Payroll Officer or the owner)
+GET {{baseUrl}}/payslips/PS0000000005/download
+Authorization: Bearer {{emp}}
+
+###############################################################################
+# Process 0.7 Generate Reports - UC-16, UC-17 (BR-22, BR-23)
+###############################################################################
+
+### HR report (HR Manager): Attendance | Leave | Headcount | Employee
+GET {{baseUrl}}/reports/hr?report_type=Attendance&from_date={{period}}-01&to_date={{period}}-28&department=Engineering
+Authorization: Bearer {{hr}}
+
+### Financial / payroll report (Finance Manager): Payroll | Financial
+GET {{baseUrl}}/reports/financial?report_type=Financial&from_date={{period}}-01&to_date={{period}}-28
+Authorization: Bearer {{fm}}
+
+###############################################################################
+# Sign out
+###############################################################################
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{emp}}
