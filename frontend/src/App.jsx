@@ -7,7 +7,6 @@ import { ROLES, homeFor } from './layout/menu';
 import LoginPage from './pages/LoginPage';
 import AccessDenied from './pages/AccessDenied';
 import NotFound from './pages/NotFound';
-import Pending from './pages/Pending';
 import EmployeeDashboard from './pages/employee/Dashboard';
 import EmployeeAttendance from './pages/employee/Attendance';
 import ApplyLeave from './pages/employee/ApplyLeave';
@@ -28,6 +27,11 @@ import Candidates from './pages/recruitment/Candidates';
 import Interviews from './pages/recruitment/Interviews';
 import Offers from './pages/recruitment/Offers';
 import OfferLetter from './pages/recruitment/OfferLetter';
+import RunPayroll from './pages/payroll/RunPayroll';
+import PayrollRecords from './pages/payroll/PayrollRecords';
+import Payslips from './pages/payroll/Payslips';
+import PayslipView from './pages/payroll/PayslipView';
+import FinancialReport from './pages/finance/FinancialReport';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -93,18 +97,18 @@ export default function App() {
         {/* Payroll Officer — UC-11, UC-12, UC-13, UC-14, UC-15 */}
         <Route path="payroll" element={only(ROLES.PAYROLL)}>
           <Route index element={<Navigate to="run" replace />} />
-          <Route path="run" element={<Pending title="Run Payroll" phase={5} />} />
-          <Route path="records" element={<Pending title="Payroll Records" phase={5} />} />
-          <Route path="payslips" element={<Pending title="Payslips" phase={5} />} />
-          <Route path="payslips/:payslip_id" element={<Pending title="Payslip" phase={5} />} />
-          <Route path="salary" element={<Pending title="Salary View" phase={5} />} />
+          <Route path="run" element={<RunPayroll />} />
+          <Route path="records" element={<PayrollRecords />} />
+          <Route path="payslips" element={<Payslips />} />
+          <Route path="payslips/:payslip_id" element={<PayslipView />} />
+          <Route path="salary" element={<SalaryView subtitle="Basic salary and processed pay periods of employees (UC-11)." />} />
         </Route>
 
         {/* Finance Manager — UC-11, UC-17 */}
         <Route path="finance" element={only(ROLES.FINANCE)}>
           <Route index element={<Navigate to="salary" replace />} />
-          <Route path="salary" element={<Pending title="Salary View" phase={5} />} />
-          <Route path="reports" element={<Pending title="Financial / Payroll Report" phase={5} />} />
+          <Route path="salary" element={<SalaryView subtitle="Salary information of employees for financial oversight (UC-11)." />} />
+          <Route path="reports" element={<FinancialReport />} />
         </Route>
       </Route>
 
