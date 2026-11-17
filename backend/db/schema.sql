@@ -102,11 +102,14 @@ CREATE TABLE IF NOT EXISTS INTERVIEW_SCHEDULE (
   interviewer_name TEXT NULL CHECK (length(interviewer_name) <= 100),
   interview_status TEXT NOT NULL DEFAULT 'Scheduled'
                    CHECK (length(interview_status) <= 12 AND
-                          interview_status IN ('Scheduled','Completed','Selected','Rejected','Cancelled')),
-  -- ASSUMPTION A-1 / BR-13: no two interviews for the same candidate, or in the same venue, at the same date+time
-  UNIQUE (candidate_id, interview_date, interview_time),
-  UNIQUE (interview_venue, interview_date, interview_time)
+                          interview_status IN ('Scheduled','Completed','Selected','Rejected','Cancelled'))
 );
+-- ASSUMPTION A-1 / BR-13: no two interviews for the same candidate, or in the same venue, at the same
+-- date+time. Partial indexes so that a Cancelled interview frees its slot.
+CREATE UNIQUE INDEX IF NOT EXISTS ux_interview_candidate_slot
+  ON INTERVIEW_SCHEDULE(candidate_id, interview_date, interview_time) WHERE interview_status <> 'Cancelled';
+CREATE UNIQUE INDEX IF NOT EXISTS ux_interview_venue_slot
+  ON INTERVIEW_SCHEDULE(interview_venue COLLATE NOCASE, interview_date, interview_time) WHERE interview_status <> 'Cancelled';
 
 -- T-D4-04 OFFER
 CREATE TABLE IF NOT EXISTS OFFER (

@@ -28,6 +28,13 @@ const enumOf = (label, values) =>
     error: (iss) => (iss.input === undefined ? `${label} is required` : `${label} must be one of: ${values.join(', ')}`),
   });
 
+/** Time of day HH:MM (or HH:MM:SS), normalised to HH:MM. */
+const timeOfDay = (label) =>
+  text(label)
+    .trim()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, `${label} must be a valid time in HH:MM format`)
+    .transform((t) => t.slice(0, 5));
+
 const MAX_DECIMAL_10_2_PAISE = 9_999_999_999; // DECIMAL(10,2) -> 99,999,999.99
 
 /** Money in rupees (number or numeric string, <= 2 decimals). Returns a number with 2-decimal precision. */
@@ -56,6 +63,7 @@ module.exports = {
   text,
   notBlank,
   isoDate,
+  timeOfDay,
   id,
   enumOf,
   amount,

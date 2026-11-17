@@ -14,6 +14,7 @@ const leaveRoutes = require('./modules/leave/routes');
 const profileRoutes = require('./modules/profile/routes');
 const employeeRoutes = require('./modules/employees/routes');
 const retirementRoutes = require('./modules/retirement/routes');
+const recruitment = require('./modules/recruitment/routes');
 
 function createApp() {
   const app = express();
@@ -40,6 +41,7 @@ function createApp() {
   api.use('/profile', profileRoutes); // Process 0.3.3
   api.use('/employees', employeeRoutes); // Process 0.3.1, 0.3.2
   api.use('/retirement-plans', retirementRoutes); // Process 0.3.4
+  recruitment.mount(api); // Process 0.4: /vacancies, /candidates, /interviews, /offers
 
   app.use('/api', api);
   app.use(notFoundHandler);
