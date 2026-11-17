@@ -25,7 +25,7 @@ const { start: PS, end: PE } = dates.periodBounds(P);
 before(async () => {
   for (const [k, id] of Object.entries(USERS)) tokens[k] = await login(app, id);
   let seq = 900;
-  const att = db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES (?, ?, ?, '09:00:00', 'Present', ?)");
+  const att = db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES (?, ?, ?, '09:00', 'Present', ?)");
   const days = (emp, n) => {
     for (let dd = 1; dd <= n; dd += 1) att.run(`ATT${String((seq += 1)).padStart(9, '0')}`, emp, `${P}-${String(dd).padStart(2, '0')}`, dates.nowTs());
   };
@@ -86,28 +86,37 @@ describe('BR-22 HR report scope (UC-16)', () => {
   });
 
   test('Headcount report: active employees by department', async () => {
-    const d = (await hr('report_type=Headcount')).body.data;
+    const d = (await hr(`report_type=Headcount&from_date=${PS}&to_date=${PE}`)).body.data;
+    assert.equal(d.report_title, `Headcount Report (${PS} to ${PE})`);
     const map = Object.fromEntries(d.rows.map((r) => [r.department, r.headcount]));
     assert.deepEqual(map, { Engineering: 3, Finance: 2, HR: 1, Operations: 1, Payroll: 1, Recruitment: 1, Sales: 1 });
     assert.equal(d.headcount, 10);
   });
 
   test('Employee report and every HR report exclude salary and bank data', async () => {
-    const e = (await hr('report_type=Employee&department=Finance')).body.data;
+    const e = (await hr(`report_type=Employee&department=Finance&from_date=${PS}&to_date=${PE}`)).body.data;
     assert.deepEqual(e.rows.map((r) => r.employee_id), ['EMP00004', 'EMP00009']);
-    for (const qs of ['report_type=Employee', 'report_type=Headcount', `report_type=Attendance&from_date=${PS}&to_date=${PE}`, `report_type=Leave&from_date=${PS}&to_date=${PE}`]) {
-      const json = JSON.stringify((await hr(qs)).body);
+    for (const type of ['Employee', 'Headcount', 'Attendance', 'Leave']) {
+      const qs = `report_type=${type}&from_date=${PS}&to_date=${PE}`;
+      const res = await hr(qs);
+      assert.equal(res.status, 200, qs);
+      const json = JSON.stringify(res.body);
       for (const banned of ['basic_salary', 'bank_account', 'gross_salary', 'net_salary', 'allowances', '100200300']) {
         assert.ok(!json.includes(banned), `${qs} leaks ${banned}`);
       }
     }
   });
 
-  test('validation: report type domain, dates required for Attendance/Leave, from <= to, department list', async () => {
-    assert.equal((await hr('report_type=Organization')).status, 422); // UC-18 was removed
-    assert.equal((await hr('report_type=Attendance')).status, 422);
+  test('BR-22 valid period: from/to required for every HR report type; type domain; from <= to; department list', async () => {
+    assert.equal((await hr(`report_type=Organization&from_date=${PS}&to_date=${PE}`)).status, 422); // UC-18 was removed
+    for (const type of ['Attendance', 'Leave', 'Headcount', 'Employee']) {
+      const r = await hr(`report_type=${type}`);
+      assert.equal(r.status, 422, type);
+      assert.deepEqual(r.body.details.map((x) => x.field).sort(), ['query.from_date', 'query.to_date']);
+    }
     assert.equal((await hr(`report_type=Leave&from_date=${PE}&to_date=${PS}`)).status, 422);
-    assert.equal((await hr('report_type=Headcount&department=Marketing')).status, 422);
+    assert.equal((await hr(`report_type=Headcount&department=Marketing&from_date=${PS}&to_date=${PE}`)).status, 422);
+    assert.equal((await hr(`report_type=Employee&from_date=2026-02-30&to_date=${PE}`)).status, 422);
     assert.equal((await hr('report_type=Headcount&from_date=2026-01-01')).status, 422);
   });
 });

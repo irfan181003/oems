@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS ATTENDANCE (
   attendance_id TEXT NOT NULL PRIMARY KEY CHECK (length(attendance_id) <= 12),
   employee_id   TEXT NOT NULL REFERENCES EMPLOYEE(employee_id) CHECK (length(employee_id) <= 8),
   att_date      TEXT NOT NULL DEFAULT CURRENT_DATE,
-  checkin_time  TEXT NOT NULL,
-  checkout_time TEXT NULL,
+  checkin_time  TEXT NOT NULL CHECK (checkin_time GLOB '[0-2][0-9]:[0-5][0-9]'),       -- DE-005 TIME hh:mm
+  checkout_time TEXT NULL CHECK (checkout_time GLOB '[0-2][0-9]:[0-5][0-9]'),          -- DE-006 TIME hh:mm
   att_status    TEXT NOT NULL DEFAULT 'Present'
                 CHECK (length(att_status) <= 10 AND att_status IN ('Present','Absent','Half-day','On Leave')),
   recorded_ts   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,

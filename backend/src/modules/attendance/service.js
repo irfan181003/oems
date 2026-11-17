@@ -7,10 +7,11 @@ const { auditActor } = require('../../middleware/audit');
 
 const COLUMNS = 'a.attendance_id, a.employee_id, a.att_date, a.checkin_time, a.checkout_time, a.att_status, a.recorded_ts';
 
-// UC-01 | FR-1 | Process 0.1.1, 0.1.2 | BR-01 | NFR-1 — date and time come from the server clock (DE-003, DE-004)
+// UC-01 | FR-1 | Process 0.1.1, 0.1.2 | BR-01 | NFR-1 — date and time come from the server clock (DE-003, DE-004);
+// times are stored as hh:mm (DE-005, DE-006)
 function checkIn(db, actor) {
   const attDate = dates.today();
-  const time = dates.nowTime();
+  const time = dates.nowHm();
   return db.transaction(() => {
     const existing = db
       .prepare('SELECT attendance_id FROM ATTENDANCE WHERE employee_id = ? AND att_date = ?')
@@ -27,10 +28,11 @@ function checkIn(db, actor) {
   })();
 }
 
-// UC-01 | FR-1 | Process 0.1.2 | BR-02 | NFR-1 — check-out needs today's check-in, must be later, only once
+// UC-01 | FR-1 | Process 0.1.2 | BR-02 | NFR-1 — check-out needs today's check-in, must be later, only once.
+// With hh:mm times (DE-006) a check-out in the same minute as the check-in is not later and is refused.
 function checkOut(db, actor) {
   const attDate = dates.today();
-  const time = dates.nowTime();
+  const time = dates.nowHm();
   return db.transaction(() => {
     const row = db
       .prepare('SELECT attendance_id, checkin_time, checkout_time FROM ATTENDANCE WHERE employee_id = ? AND att_date = ?')

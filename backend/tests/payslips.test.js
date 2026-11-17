@@ -19,7 +19,7 @@ const line = (id) => db.prepare('SELECT * FROM PAYROLL WHERE employee_id = ? AND
 before(async () => {
   for (const [k, id] of Object.entries(USERS)) tokens[k] = await login(app, id);
   PO = tokens.PAYROLL;
-  const ins = db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES (?, ?, ?, '09:00:00', 'Present', ?)");
+  const ins = db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES (?, ?, ?, '09:00', 'Present', ?)");
   for (let dday = 1; dday <= 22; dday += 1) {
     ins.run(`ATT${String(700 + dday).padStart(9, '0')}`, 'EMP00005', `${P}-${String(dday).padStart(2, '0')}`, dates.nowTs());
   }

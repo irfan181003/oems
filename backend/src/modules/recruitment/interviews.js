@@ -29,7 +29,7 @@ function getById(db, interviewId) {
 
 /** DE-059 / DE-060: interview date and time not in the past (server clock). */
 function assertNotPast(date, time) {
-  const now = `${dates.today()} ${dates.nowTime().slice(0, 5)}`;
+  const now = `${dates.today()} ${dates.nowHm()}`;
   if (`${date} ${time}` <= now) {
     throw unprocessable('Interview slot is in the past', [
       { field: 'body.interview_date', message: 'Interview date and time must be later than now' },

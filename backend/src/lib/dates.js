@@ -32,6 +32,11 @@ function nowTime(date = new Date()) {
   return `${p.hour}:${p.minute}:${p.second}`;
 }
 
+/** Current time of day in APP_TIMEZONE, HH:MM (TIME format of DE-005, DE-006, DE-060). */
+function nowHm(date = new Date()) {
+  return nowTime(date).slice(0, 5);
+}
+
 /** Current timestamp in APP_TIMEZONE, 'YYYY-MM-DD HH:MM:SS'. */
 function nowTs(date = new Date()) {
   return `${today(date)} ${nowTime(date)}`;
@@ -90,6 +95,7 @@ function periodBounds(period) {
 module.exports = {
   today,
   nowTime,
+  nowHm,
   nowTs,
   currentPeriod,
   isValidIsoDate,

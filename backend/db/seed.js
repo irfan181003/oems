@@ -155,9 +155,9 @@ function seedAttendance(db, periods) {
           if ((dayIdx * 7 + empIdx * 3) % 17 === 0) return; // a few absences
           const inMin = (dayIdx + empIdx) % 30;
           const outMin = (dayIdx * 3 + empIdx) % 60;
-          const checkin = `09:${String(inMin).padStart(2, '0')}:00`;
-          const checkout = `${17 + (outMin % 2)}:${String(outMin).padStart(2, '0')}:00`;
-          ins.run(formatId('ATTENDANCE', seq), e.employee_id, d, checkin, checkout, `${d} ${checkout}`);
+          const checkin = `09:${String(inMin).padStart(2, '0')}`; // DE-005 hh:mm
+          const checkout = `${17 + (outMin % 2)}:${String(outMin).padStart(2, '0')}`; // DE-006 hh:mm
+          ins.run(formatId('ATTENDANCE', seq), e.employee_id, d, checkin, checkout, `${d} ${checkout}:00`);
           seq += 1;
           n += 1;
         });

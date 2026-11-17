@@ -22,7 +22,7 @@ describe('BR-01 duplicate attendance prevention', () => {
     assert.equal(r1.body.data.employee_id, USERS.EMP);
     assert.equal(r1.body.data.att_date, today);
     assert.equal(r1.body.data.att_status, 'Present');
-    assert.match(r1.body.data.checkin_time, /^\d{2}:\d{2}:\d{2}$/);
+    assert.match(r1.body.data.checkin_time, /^\d{2}:\d{2}$/, 'DE-005 TIME hh:mm');
     assert.equal(r1.body.data.checkout_time, null);
 
     const r2 = await request(app).post('/api/attendance/check-in').set(bearer(tokens.EMP));
@@ -52,9 +52,29 @@ describe('BR-02 check-out after check-in', () => {
     assert.match(r.body.error_message, /No check-in/);
   });
 
+  test('check-out in the same minute as check-in is not later -> 409', async (t) => {
+    const tok = await login(app, 'EMP00009');
+    const minute = dates.nowHm();
+    db.prepare(
+      "INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES ('ATT000000901', 'EMP00009', ?, ?, 'Present', ?)"
+    ).run(today, minute, dates.nowTs());
+    const r = await request(app).post('/api/attendance/check-out').set(bearer(tok));
+    if (dates.nowHm() !== minute) return t.skip('clock moved to the next minute during the test; re-run');
+    assert.equal(r.status, 409);
+    assert.match(r.body.error_message, /later than check-in/);
+  });
+
+  test('DE-005/006: the database only accepts hh:mm times', () => {
+    assert.throws(
+      () => db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time) VALUES ('ATT000000902', 'EMP00010', ?, '09:00:00')").run(today),
+      /CHECK/
+    );
+    assert.throws(() => db.prepare("UPDATE ATTENDANCE SET checkout_time = '9:5' WHERE attendance_id = 'ATT000000901'").run(), /CHECK/);
+  });
+
   test('check-out time not later than check-in time -> 409', async () => {
     db.prepare(
-      "INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES ('ATT000000900', 'EMP00008', ?, '23:59:59', 'Present', ?)"
+      "INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, att_status, recorded_ts) VALUES ('ATT000000900', 'EMP00008', ?, '23:59', 'Present', ?)"
     ).run(today, dates.nowTs());
     const r = await request(app).post('/api/attendance/check-out').set(bearer(tokens.EMP8));
     assert.equal(r.status, 409);
@@ -63,9 +83,10 @@ describe('BR-02 check-out after check-in', () => {
   });
 
   test('valid check-out is recorded once; a second check-out -> 409', async () => {
-    db.prepare("UPDATE ATTENDANCE SET checkin_time = '00:00:00' WHERE employee_id = ? AND att_date = ?").run(USERS.EMP, today);
+    db.prepare("UPDATE ATTENDANCE SET checkin_time = '00:00' WHERE employee_id = ? AND att_date = ?").run(USERS.EMP, today);
     const r1 = await request(app).post('/api/attendance/check-out').set(bearer(tokens.EMP));
     assert.equal(r1.status, 200);
+    assert.match(r1.body.data.checkout_time, /^\d{2}:\d{2}$/, 'DE-006 TIME hh:mm');
     assert.ok(r1.body.data.checkout_time > r1.body.data.checkin_time);
     const r2 = await request(app).post('/api/attendance/check-out').set(bearer(tokens.EMP));
     assert.equal(r2.status, 409);

@@ -91,7 +91,7 @@ describe('schema (Data Dictionary section 8)', () => {
     assert.throws(() => db.prepare("UPDATE EMPLOYEE SET basic_salary = 0 WHERE employee_id = 'EMP00005'").run(), /CHECK/);
     assert.throws(() => db.prepare("UPDATE EMPLOYEE SET employment_status = 'Fired' WHERE employee_id = 'EMP00005'").run(), /CHECK/);
     assert.throws(
-      () => db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time) VALUES ('ATT000000001','EMP99999','2026-01-01','09:00:00')").run(),
+      () => db.prepare("INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time) VALUES ('ATT000000001','EMP99999','2026-01-01','09:00')").run(),
       /FOREIGN KEY/
     );
   });
@@ -99,9 +99,9 @@ describe('schema (Data Dictionary section 8)', () => {
   test('A-1 composite uniqueness: one attendance row per employee per date', () => {
     const ins = db.prepare('INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time) VALUES (?,?,?,?)');
     db.transaction(() => {
-      ins.run('ATT000000901', 'EMP00005', '2026-01-05', '09:00:00');
-      ins.run('ATT000000902', 'EMP00005', '2026-01-06', '09:00:00'); // another date OK (no UNIQUE on employee_id alone)
-      assert.throws(() => ins.run('ATT000000903', 'EMP00005', '2026-01-05', '10:00:00'), /UNIQUE/);
+      ins.run('ATT000000901', 'EMP00005', '2026-01-05', '09:00');
+      ins.run('ATT000000902', 'EMP00005', '2026-01-06', '09:00'); // another date OK (no UNIQUE on employee_id alone)
+      assert.throws(() => ins.run('ATT000000903', 'EMP00005', '2026-01-05', '10:00'), /UNIQUE/);
     })();
     db.prepare("DELETE FROM ATTENDANCE WHERE attendance_id IN ('ATT000000901','ATT000000902')").run();
   });

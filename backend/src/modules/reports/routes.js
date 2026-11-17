@@ -34,7 +34,8 @@ const hrQuery = z
     to_date: f.isoDate('To date').optional(),
     department: f.department.optional(),
   })
-  .superRefine((q, ctx) => dateRangeRules(q.report_type === 'Attendance' || q.report_type === 'Leave')(q, ctx));
+  // BR-22 validation condition "Role HR Manager; valid period" — a period is required for every HR report type
+  .superRefine(dateRangeRules(true));
 
 const financialQuery = z
   .strictObject({

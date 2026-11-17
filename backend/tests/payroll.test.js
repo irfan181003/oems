@@ -25,7 +25,7 @@ const d = (period, day) => `${period}-${String(day).padStart(2, '0')}`;
 let attSeq = 500;
 function present(employeeId, period, days) {
   const ins = db.prepare(
-    "INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, checkout_time, att_status, recorded_ts) VALUES (?, ?, ?, '09:00:00', '18:00:00', 'Present', ?)"
+    "INSERT INTO ATTENDANCE (attendance_id, employee_id, att_date, checkin_time, checkout_time, att_status, recorded_ts) VALUES (?, ?, ?, '09:00', '18:00', 'Present', ?)"
   );
   for (const day of days) ins.run(`ATT${String((attSeq += 1)).padStart(9, '0')}`, employeeId, d(period, day), dates.nowTs());
 }
