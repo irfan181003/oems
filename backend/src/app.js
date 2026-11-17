@@ -17,6 +17,8 @@ const retirementRoutes = require('./modules/retirement/routes');
 const recruitment = require('./modules/recruitment/routes');
 const payrollRoutes = require('./modules/payroll/routes');
 const salaryRoutes = require('./modules/salary/routes');
+const payslipRoutes = require('./modules/payslips/routes');
+const reportRoutes = require('./modules/reports/routes');
 
 function createApp() {
   const app = express();
@@ -46,6 +48,8 @@ function createApp() {
   recruitment.mount(api); // Process 0.4: /vacancies, /candidates, /interviews, /offers
   api.use('/payroll', payrollRoutes); // Process 0.5.1-0.5.4
   api.use('/salary', salaryRoutes); // UC-11 View Salary (A-4)
+  api.use('/payslips', payslipRoutes); // Process 0.6
+  api.use('/reports', reportRoutes); // Process 0.7
 
   app.use('/api', api);
   app.use(notFoundHandler);
