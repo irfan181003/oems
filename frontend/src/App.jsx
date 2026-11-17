@@ -15,6 +15,14 @@ import MyLeaves from './pages/employee/MyLeaves';
 import Profile from './pages/employee/Profile';
 import MySalary from './pages/employee/MySalary';
 import EmployeePayslip from './pages/employee/Payslip';
+import Employees from './pages/hr/Employees';
+import RegisterEmployee from './pages/hr/RegisterEmployee';
+import EmployeeRecord from './pages/hr/EmployeeRecord';
+import HrAttendance from './pages/hr/Attendance';
+import LeaveReview from './pages/hr/LeaveReview';
+import RetirementPlans from './pages/hr/RetirementPlans';
+import HrReports from './pages/hr/HrReports';
+import SalaryView from './pages/shared/SalaryView';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -57,14 +65,14 @@ export default function App() {
         {/* HR Manager — UC-02, UC-04, UC-06, UC-07, UC-11, UC-16, UC-20 */}
         <Route path="hr" element={only(ROLES.HR)}>
           <Route index element={<Navigate to="employees" replace />} />
-          <Route path="employees" element={<Pending title="Employees" phase={3} />} />
-          <Route path="employees/new" element={<Pending title="Register Employee" phase={3} />} />
-          <Route path="employees/:id" element={<Pending title="Employee Record" phase={3} />} />
-          <Route path="attendance" element={<Pending title="Attendance" phase={3} />} />
-          <Route path="leaves" element={<Pending title="Leave Review" phase={3} />} />
-          <Route path="retirement" element={<Pending title="Retirement Plans" phase={3} />} />
-          <Route path="salary" element={<Pending title="Salary View" phase={3} />} />
-          <Route path="reports" element={<Pending title="HR Reports" phase={3} />} />
+          <Route path="employees" element={<Employees />} />
+          <Route path="employees/new" element={<RegisterEmployee />} />
+          <Route path="employees/:id" element={<EmployeeRecord />} />
+          <Route path="attendance" element={<HrAttendance />} />
+          <Route path="leaves" element={<LeaveReview />} />
+          <Route path="retirement" element={<RetirementPlans />} />
+          <Route path="salary" element={<SalaryView subtitle="Basic salary and processed pay periods of employees (UC-11)." />} />
+          <Route path="reports" element={<HrReports />} />
         </Route>
 
         {/* Recruitment Officer — UC-09, UC-10, UC-19 (+ candidates, A-3) */}

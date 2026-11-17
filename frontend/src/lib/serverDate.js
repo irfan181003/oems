@@ -22,6 +22,14 @@ const iso = (d) => d.toISOString().slice(0, 10);
 
 export const addDays = (isoDate, n) => iso(new Date(utc(isoDate).getTime() + n * 86400000));
 
+/** Add whole years (29 Feb -> 28 Feb in non-leap years); same rule as the backend's 18-years-at-joining check. */
+export function addYears(isoDate, years) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const ty = y + years;
+  const last = new Date(Date.UTC(ty, m, 0)).getUTCDate();
+  return `${String(ty).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
+}
+
 /** Inclusive day count, e.g. Number of Leave Days = end - start + 1 (DE-022). */
 export const daysInclusive = (start, end) => Math.round((utc(end) - utc(start)) / 86400000) + 1;
 
