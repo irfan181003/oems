@@ -8,6 +8,13 @@ import LoginPage from './pages/LoginPage';
 import AccessDenied from './pages/AccessDenied';
 import NotFound from './pages/NotFound';
 import Pending from './pages/Pending';
+import EmployeeDashboard from './pages/employee/Dashboard';
+import EmployeeAttendance from './pages/employee/Attendance';
+import ApplyLeave from './pages/employee/ApplyLeave';
+import MyLeaves from './pages/employee/MyLeaves';
+import Profile from './pages/employee/Profile';
+import MySalary from './pages/employee/MySalary';
+import EmployeePayslip from './pages/employee/Payslip';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -38,13 +45,13 @@ export default function App() {
 
         {/* Employee — UC-01, UC-02, UC-03, UC-05, UC-11, UC-13 */}
         <Route path="employee" element={only(ROLES.EMPLOYEE)}>
-          <Route index element={<Pending title="Dashboard" phase={2} />} />
-          <Route path="attendance" element={<Pending title="Attendance" phase={2} />} />
-          <Route path="leave/new" element={<Pending title="Apply Leave" phase={2} />} />
-          <Route path="leave" element={<Pending title="My Leaves" phase={2} />} />
-          <Route path="profile" element={<Pending title="My Profile" phase={2} />} />
-          <Route path="salary" element={<Pending title="My Salary" phase={2} />} />
-          <Route path="payslips/:payslip_id" element={<Pending title="Payslip" phase={2} />} />
+          <Route index element={<EmployeeDashboard />} />
+          <Route path="attendance" element={<EmployeeAttendance />} />
+          <Route path="leave/new" element={<ApplyLeave />} />
+          <Route path="leave" element={<MyLeaves />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="salary" element={<MySalary />} />
+          <Route path="payslips/:payslip_id" element={<EmployeePayslip />} />
         </Route>
 
         {/* HR Manager — UC-02, UC-04, UC-06, UC-07, UC-11, UC-16, UC-20 */}
